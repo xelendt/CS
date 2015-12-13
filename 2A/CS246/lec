@@ -1,0 +1,89 @@
+# CS246
+
+## Lecture 17: Virtual and Pure Virtual
+
+#### Last time: System Modelling
+ - composition, aggregation, inheritence
+ - private really means private
+ - protected keyword
+
+```cpp
+class Book{
+	protected:
+		string author;
+};
+
+class Textbook: public Book{
+	public:
+	void addAuthor( string auth ){
+		author += auth;
+	}
+};
+
+int main()
+{
+	Textbook tb( --- );
+	tb.author = ---; // INVALID because it is still not accessible
+}
+```
+
+*Word of advice: keep fields priavte*
+
+Instead you can:
+- provide protected methods for subclasses to access. This creates a second layer of encapsualtion. You choose to implement the accessors/mutators, so you get to change the code
+
+```cpp
+class Book{
+	int numPages;
+
+	protected:
+	int getNumPages(){ return numPages; }
+
+	public:
+	bool isItHeavy(){ return numPages > 200; }
+};
+
+class Textbook: public Book{
+	public:
+	bool isItHeavy(){ return this->getNumPages() > 200; }
+};
+```
+
+When we create the textbook, it *would have* inherited the ```isItHeavy()``` for ```Book```, but we instead **override** it.
+
+When a subclass object is placed in a superclass variable, object slicing ( coersion ) might occur.
+If you want to prevent this, use a pointer to that object.
+
+```cpp
+Book* b2 = Comic( ---, ---, ---, --- );
+
+// or
+
+Comic c( --, --, --, -- );
+Comic *cp = &c; 
+cp->isItHeavy(); // true comic::isItHeavy();
+Book *bp = &c; // no slicing because it is just a pointer;
+bp->isItHeavy();
+```
+
+Rule of thumb is that the the compiler looks at the declared type of a variable to determine which method to call.
+
+This is called **static dispatch**. Typically we want the choice to be based on the actual type of the object.
+
+We can do this by making the method **virtual**. 
+
+#### Virtual Methods:
+Choose which method to run based on the run time type of the object. Not the declared type of the pointer to the object, but the run time type.
+
+**Dynamic Dispatch** is the ability to choose which method to run based on the runtime type of the object.
+
+**Polymorphism** is the ability to accomodate multiple types in a single abstraction. An example would be an array that can store Books, and comics, and textbooks. This is good when you have dynamic dispatch when you can get them to perform as their runtime type.
+
+Rule of thumb: always make a dtor virtual.
+
+Another rule of thumb: always write *virtual* in italics. In UML, *abstract* and *virtual* are italics, so you put the method name in italics.
+
+**Pure Virtual** means that the funciton in the base class is not defined, and the subclasses must override it. When there is P.V., you cannot create a class of the base class, since it is abstract.
+
+A derived class will inherit all P.V. methods. This would make the derived class also abstract unless all P.V. methods are implemented. A class that contains no pure virtual methods is called **concrete**.
+
